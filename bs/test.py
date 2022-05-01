@@ -1,36 +1,65 @@
 import unittest
-from bs4 import BeautifulSoup
-from collections import Counter
+from bs4 import BeautifulSoup, Tag
 import re
 
 
 def parse(path_to_file):
-    # Поместите ваш код здесь.
-    # ВАЖНО!!!
-    # При открытии файла, добавьте в функцию open необязательный параметр
-    # encoding='utf-8', его отсутствие в коде будет вызвать падение вашего
-    # решения на грейдере с ошибкой UnicodeDecodeError
-    # return [imgs, headers, linkslen, lists]
-    counter = Counter()
+    imgs_cnt = 0
+    headers_cnt = 0
+    linkslen_cnt = 0
+    lists_cnt = 0
 
     with open(path_to_file, 'r', encoding='utf-8') as html:
         soup = BeautifulSoup(html, 'lxml')
 
-    bodies = soup.find_all(
+    body = soup.find(
         lambda x: x.name == 'div' and x.get('id', None) == 'bodyContent')
 
-    for body in bodies:
-        for _ in body.find_all(lambda tag: tag.name == 'img'
-                               and int(tag.get('width', 0)) >= 200):
-            counter['imgs'] += 1
+    for _ in body.find_all(lambda tag: tag.name == 'img'
+                           and int(tag.get('width', 0)) >= 200):
+        imgs_cnt += 1
 
-    headers = soup.find_all(lambda tag: re.match(r'^h[1-6]$', tag.name)
-                            and tag.text[0] in 'ETC')
+    headers = body.find_all(
+        lambda tag: re.match(r'^h[1-6]$', tag.name) and tag.text[0] in 'ETC')
 
     for _ in headers:
-        counter['headers'] += 1
+        headers_cnt += 1
 
-    print(counter)
+    refs = body.find_all('a')
+
+    def next_sibling_tag(root):
+        sibling = root.next_sibling
+        while sibling is not None and not isinstance(sibling, Tag):
+            sibling = sibling.next_sibling
+        return sibling
+
+    longest = 0
+
+    for ref in refs:
+        next_tag = next_sibling_tag(ref)
+        count = 1
+        while next_tag and next_tag.name == 'a':
+            count += 1
+            next_tag = next_sibling_tag(next_tag)
+        longest = max(longest, count)
+
+    linkslen_cnt = longest
+
+    lists = body.find_all(['ul', 'ol'])
+
+    count = 0
+    for list_ in lists:
+        for parent in list_.parents:
+            if parent.name == 'li':
+                break
+        else:
+            count += 1
+
+    lists_cnt = count
+
+    print([imgs_cnt, headers_cnt, linkslen_cnt, lists_cnt])
+
+    return [imgs_cnt, headers_cnt, linkslen_cnt, lists_cnt]
 
 
 class TestParse(unittest.TestCase):
