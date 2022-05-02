@@ -1,7 +1,6 @@
 import unittest
 from bs4 import BeautifulSoup, Tag
 import re
-from collections import deque
 
 
 def count_imgs(root):
@@ -32,16 +31,18 @@ def prev_tag(root):
 
 
 def count_refs(root):
-    refs = deque(root.find_all('a'))
+    refs = root.find_all('a')
     if len(refs) <= 1:
         return 1
     subsequences = []
-    subsequences.append([refs.popleft()])
+    subsequences.append([refs.pop()])
     while len(refs):
-        next_ref = refs.popleft()
-        while next_ref and prev_tag(next_ref) is subsequences[-1][-1]:
+        next_ref = refs.pop()
+        while next_ref and next_tag(next_ref) is subsequences[-1][-1]:
             subsequences[-1].append(next_ref)
-            next_ref = refs.popleft()
+            if not len(refs):
+                break
+            next_ref = refs.pop()
         else:
             subsequences.append([next_ref])
     return len(max(subsequences, key=lambda x: len(x)))
