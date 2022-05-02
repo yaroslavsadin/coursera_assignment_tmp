@@ -3,50 +3,41 @@ from bs4 import BeautifulSoup, Tag
 import re
 
 
-def parse(path_to_file):
-    imgs_cnt = 0
-    headers_cnt = 0
-    linkslen_cnt = 0
-    lists_cnt = 0
+def count_imgs(root):
+    imgs = root.find_all(lambda tag: tag.name == 'img'
+                         and int(tag.get('width', 0)) >= 200)
+    return len(imgs)
 
-    with open(path_to_file, 'r', encoding='utf-8') as html:
-        soup = BeautifulSoup(html, 'lxml')
 
-    body = soup.find(
-        lambda x: x.name == 'div' and x.get('id', None) == 'bodyContent')
+def count_headers(root):
+    headers = root.find_all(lambda tag: re.match(r'^h[1-6]$', tag.name)
+                            and tag.text[0] in 'ETC')
 
-    for _ in body.find_all(lambda tag: tag.name == 'img'
-                           and int(tag.get('width', 0)) >= 200):
-        imgs_cnt += 1
+    return len(headers)
 
-    headers = body.find_all(
-        lambda tag: re.match(r'^h[1-6]$', tag.name) and tag.text[0] in 'ETC')
 
-    for _ in headers:
-        headers_cnt += 1
+def next_tag(root):
+    sibling = root.next_sibling
+    while sibling is not None and not isinstance(sibling, Tag):
+        sibling = sibling.next_sibling
+    return sibling
 
-    refs = body.find_all('a')
 
-    def next_sibling_tag(root):
-        sibling = root.next_sibling
-        while sibling is not None and not isinstance(sibling, Tag):
-            sibling = sibling.next_sibling
-        return sibling
-
+def count_refs(root):
+    refs = root.find_all('a')
     longest = 0
-
     for ref in refs:
-        next_tag = next_sibling_tag(ref)
+        next_tag = next_tag(ref)
         count = 1
         while next_tag and next_tag.name == 'a':
             count += 1
-            next_tag = next_sibling_tag(next_tag)
+            next_tag = next_tag(next_tag)
         longest = max(longest, count)
+    return longest
 
-    linkslen_cnt = longest
 
-    lists = body.find_all(['ul', 'ol'])
-
+def count_lists(root):
+    lists = root.find_all(['ul', 'ol'])
     count = 0
     for list_ in lists:
         for parent in list_.parents:
@@ -54,12 +45,21 @@ def parse(path_to_file):
                 break
         else:
             count += 1
+    return count
 
-    lists_cnt = count
 
-    print([imgs_cnt, headers_cnt, linkslen_cnt, lists_cnt])
+def parse(path_to_file):
+    with open(path_to_file, 'r', encoding='utf-8') as html:
+        soup = BeautifulSoup(html, 'lxml')
 
-    return [imgs_cnt, headers_cnt, linkslen_cnt, lists_cnt]
+    body = soup.find(
+        lambda x: x.name == 'div' and x.get('id', None) == 'bodyContent')
+
+    res = [count_imgs(body), count_headers(body),
+           count_refs(body), count_lists(body)]
+
+    print(res)
+    return res
 
 
 class TestParse(unittest.TestCase):
