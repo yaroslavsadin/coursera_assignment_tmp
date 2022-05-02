@@ -1,6 +1,7 @@
 import unittest
 from bs4 import BeautifulSoup, Tag
 import re
+from collections import deque
 
 
 def count_imgs(root):
@@ -23,17 +24,27 @@ def next_tag(root):
     return sibling
 
 
+def prev_tag(root):
+    sibling = root.previous_sibling
+    while sibling is not None and not isinstance(sibling, Tag):
+        sibling = sibling.previous_sibling
+    return sibling
+
+
 def count_refs(root):
-    refs = root.find_all('a')
-    longest = 0
-    for ref in refs:
-        next_tag = next_tag(ref)
-        count = 1
-        while next_tag and next_tag.name == 'a':
-            count += 1
-            next_tag = next_tag(next_tag)
-        longest = max(longest, count)
-    return longest
+    refs = deque(root.find_all('a'))
+    if len(refs) <= 1:
+        return 1
+    subsequences = []
+    subsequences.append([refs.popleft()])
+    while len(refs):
+        next_ref = refs.popleft()
+        while next_ref and prev_tag(next_ref) is subsequences[-1][-1]:
+            subsequences[-1].append(next_ref)
+            next_ref = refs.popleft()
+        else:
+            subsequences.append([next_ref])
+    return len(max(subsequences, key=lambda x: len(x)))
 
 
 def count_lists(root):
@@ -79,11 +90,11 @@ class TestParse(unittest.TestCase):
 if __name__ == '__main__':
     # unittest.main()
     test_cases = (
-        ('wiki/Stone_Age', [13, 10, 12, 40]),
-        ('wiki/Brain', [19, 5, 25, 11]),
-        ('wiki/Artificial_intelligence', [8, 19, 13, 198]),
-        ('wiki/Python_(programming_language)', [2, 5, 17, 41]),
-        ('wiki/Spectrogram', [1, 2, 4, 7]),)
+        ('bs/wiki/Stone_Age', [13, 10, 12, 40]),
+        ('bs/wiki/Brain', [19, 5, 25, 11]),
+        ('bs/wiki/Artificial_intelligence', [8, 19, 13, 198]),
+        ('bs/wiki/Python_(programming_language)', [2, 5, 17, 41]),
+        ('bs/wiki/Spectrogram', [1, 2, 4, 7]),)
 
     for path, expected in test_cases:
         parse(path)
