@@ -32,6 +32,7 @@ test_cases = (
     (Decimal(str(1000.1)), 'ZAR', 'KRW', "26/02/2018", '92628.4452'),
 )
 for amount, cur_from, cur_to, date, expected in test_cases:
+    print(cur_from, cur_to)
     assert isinstance(convert(amount, cur_from, cur_to, date, Request),Decimal)
     assert str(convert(amount, cur_from, cur_to, date, Request)) == expected, \
         f'Fail. Test cases - {amount}, {cur_from}, {cur_to}, {date}, {expected}'
