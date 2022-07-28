@@ -106,3 +106,10 @@ db.sqlite3
 
 # vscode
 .vscode/*
+.devcontainer/*
+
+
+.DS_Store
+*.zip
+*.tgz
+*.tar*
