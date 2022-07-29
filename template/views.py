@@ -9,12 +9,14 @@ def echo(request):
             'method': 'get',
             'vars': request.GET
         }
-    else:
+    elif request.method == 'POST':
         context = {
             'method': 'post',
             'vars': request.POST
         }
-    context['statement'] = request.META.get('X_PRINT_STATEMENT', 'empty')
+    else:
+        raise RuntimeError(f'Wrong method: {request.method}')
+    context['statement'] = request.META.get('HTTP_X_PRINT_STATEMENT', 'empty')
     return render(request, 'echo.html', context)
 
 
