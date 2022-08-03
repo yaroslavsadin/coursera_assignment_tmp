@@ -1,5 +1,4 @@
 from datetime import datetime
-from turtle import title
 
 from django.db.models import Q, Count, Avg
 from pytz import UTC
