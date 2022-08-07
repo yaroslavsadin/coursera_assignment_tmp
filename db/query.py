@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, Value, IntegerField
 from pytz import UTC
 
 from db.models import User, Blog, Topic
@@ -69,19 +69,31 @@ def unsubscribe_u2_from_blogs():
         blog.subscribers.remove(user)
 
 def get_topic_created_grated():
-    pass
+    return Topic.objects.filter(created__gt='2018-01-01')
 
 
 def get_topic_title_ended():
-    pass
+    print(Topic.objects.filter(title__endswith='content').query)
+    return Topic.objects.filter(title__endswith='content')
 
 
 def get_user_with_limit():
-    pass
+    print(User.objects.order_by('-id').query)
+    return User.objects.order_by('-id')[:2]
 
 
 def get_topic_count():
-    pass
+    blog_query = (
+        Topic.objects
+        .select_related('blog')
+        # .values('id')
+        .annotate(topic_count=Count('topic_id'))
+    )
+    print(blog_query.query)
+    # return (
+    #     Topic.objects.values('blog_id')
+    #     .annotate(topic_count=Count('blog_id')).order_by('topic_count')
+    # )
 
 
 def get_avg_topic_count():
