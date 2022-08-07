@@ -73,27 +73,25 @@ def get_topic_created_grated():
 
 
 def get_topic_title_ended():
-    print(Topic.objects.filter(title__endswith='content').query)
-    return Topic.objects.filter(title__endswith='content')
+    q = Topic.objects.filter(title__endswith='content')
+    print(q.query)
+    return q
 
 
 def get_user_with_limit():
-    print(User.objects.order_by('-id').query)
-    return User.objects.order_by('-id')[:2]
+    q = User.objects.order_by('-id')
+    print(q.query)
+    return q[:2]
 
 
 def get_topic_count():
-    blog_query = (
-        Topic.objects
-        .select_related('blog')
-        # .values('id')
-        .annotate(topic_count=Count('topic_id'))
+    q = (
+        Blog.objects
+        .annotate(topic_count=Count('topic__id'))
+        .order_by('topic_count')
     )
-    print(blog_query.query)
-    # return (
-    #     Topic.objects.values('blog_id')
-    #     .annotate(topic_count=Count('blog_id')).order_by('topic_count')
-    # )
+    print(q.query)
+    return q
 
 
 def get_avg_topic_count():
