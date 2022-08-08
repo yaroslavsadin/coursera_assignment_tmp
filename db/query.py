@@ -120,12 +120,24 @@ def get_topic_by_u1():
 
 
 def get_user_that_dont_have_blog():
-    pass
+    q = (
+        User.objects.filter(blog__id__isnull=True)
+    )
+    print(q.query)
+    return q
 
 
 def get_topic_that_like_all_users():
-    pass
+    q = Topic.objects.all()
+
+    for u in User.objects.all():
+        q = q.filter(likes=u)
+
+    print(q.query)
+    return q
 
 
 def get_topic_that_dont_have_like():
-    pass
+    q = Topic.objects.filter(~Q(likes__in=User.objects.all()))
+    print(q.query)
+    return q
