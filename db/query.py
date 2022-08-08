@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Count, Avg, Value, IntegerField
+from django.db.models import Q, Count, Avg
 from pytz import UTC
 
 from db.models import User, Blog, Topic
@@ -95,15 +95,28 @@ def get_topic_count():
 
 
 def get_avg_topic_count():
-    pass
+    q = (
+        Blog.objects
+        .annotate(topic_count=Count('topic__id'))
+    )
+    print(q.query)
+    return q.aggregate(avg=Avg('topic_count'))
 
 
 def get_blog_that_have_more_than_one_topic():
-    pass
+    q = (
+        Blog.objects.filter(topic__id__isnull=False).distinct()
+    )
+    print(q.query)
+    return q
 
 
 def get_topic_by_u1():
-    pass
+    q = (
+        Topic.objects.filter(author__first_name='u1')
+    )
+    print(q.query)
+    return q
 
 
 def get_user_that_dont_have_blog():
