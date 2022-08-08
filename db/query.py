@@ -8,6 +8,7 @@ from db.models import User, Blog, Topic
 
 def create():
     # Создать пользователя first_name = u1, last_name = u1.
+    # FIXME use `create` method instead
     u1 = User(first_name='u1', last_name='u1')
     u1.save()
     # Создать пользователя first_name = u2, last_name = u2.
@@ -34,7 +35,7 @@ def create():
     # Создать топик title = topic2_content, blog = blog1, author = u3, created = 2017-01-01.
     topic2 = Topic(
         title='topic2_content', blog=blog1,
-        author=u3, created=datetime(2017, 1, 1)
+        author=u3, created=datetime(2017, 1, 1)  # FIXME use tzinfo
     )
     topic2.save()
     # Лайкнуть topic1 пользователями u1, u2, u3.
@@ -45,6 +46,7 @@ def create():
 
 
 def edit_all():
+    # FIXME use `update` method right after `all()`
     users = User.objects.all()
     for user in users:
         user.first_name = 'uu1'
@@ -52,6 +54,7 @@ def edit_all():
 
 
 def edit_u1_u2():
+    # FIXME cna use filter + `update`
     users = User.objects.filter(first_name__in=['u1', 'u2']).all()
     for user in users:
         user.first_name = 'uu1'
@@ -63,6 +66,7 @@ def delete_u1():
 
 
 def unsubscribe_u2_from_blogs():
+    # FIXME `through` table
     blogs = Blog.objects.all()
     user = User.objects.get(first_name='u2')
     for blog in blogs:
